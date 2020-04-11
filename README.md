@@ -38,8 +38,12 @@ de diseño, en la Especialización de Arquitectura de Software Empresarial 2020 
         <td>406 - NOT_ACCEPTABLE - Creación invalida</td>
     </tr>
     <tr>
-        <td>/advisor/{providerId}</td>
-        <td>Permite la consulta de un proveedor en particular por id</td>
+        <td>/advisor/{filter}</td>
+        <td>Permite la consulta de un proveedor en particular por un filtro dado. Validos: <br>
+            CATEGORY,
+            ID,
+            IDENTIFICATION
+        </td>
         <td>GET</td>
         <td>200 - OK -</td>
         <td>406 - NOT_ACCEPTABLE - Actualización invalida</td>
