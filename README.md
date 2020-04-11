@@ -46,7 +46,7 @@ de diseño, en la Especialización de Arquitectura de Software Empresarial 2020 
         </td>
         <td>GET</td>
         <td>200 - OK -</td>
-        <td>406 - NOT_ACCEPTABLE - Actualización invalida</td>
+        <td>404 - NOT_FOUND- No se encuentra información relacionada al filtro</td>
     </tr>
 </table>
 
