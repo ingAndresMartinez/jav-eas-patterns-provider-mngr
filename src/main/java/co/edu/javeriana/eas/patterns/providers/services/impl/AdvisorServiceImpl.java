@@ -1,5 +1,6 @@
 package co.edu.javeriana.eas.patterns.providers.services.impl;
 
+import co.edu.javeriana.eas.patterns.common.dto.quotation.RequestQuotationWrapperDto;
 import co.edu.javeriana.eas.patterns.common.enums.EExceptionCode;
 import co.edu.javeriana.eas.patterns.persistence.entities.*;
 import co.edu.javeriana.eas.patterns.persistence.repositories.ICategoryRepository;
@@ -10,11 +11,14 @@ import co.edu.javeriana.eas.patterns.providers.enums.EProviderFilter;
 import co.edu.javeriana.eas.patterns.providers.exceptions.AdvisorException;
 import co.edu.javeriana.eas.patterns.providers.mappers.ProviderMapper;
 import co.edu.javeriana.eas.patterns.providers.services.IAdvisorService;
+import co.edu.javeriana.eas.patterns.providers.services.INotificationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.mail.MessagingException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -27,6 +31,7 @@ public class AdvisorServiceImpl implements IAdvisorService {
 
     private ICategoryRepository categoryRepository;
     private IProviderRepository providerRepository;
+    private INotificationService notificationService;
 
     @Override
     public List<ProviderDto> getAllProviders() throws AdvisorException {
@@ -38,7 +43,6 @@ public class AdvisorServiceImpl implements IAdvisorService {
         }
         List<ProviderDto> providesMappers = new ArrayList<>();
         provides.forEach(providerEntity -> providesMappers.add(ProviderMapper.providerEntityMapperInProviderDto(providerEntity)));
-
         LOGGER.info("FINALIZA CONSULTA DE TODOS LOS PROVEEDORES [{}]", provides);
         return providesMappers;
     }
@@ -57,13 +61,29 @@ public class AdvisorServiceImpl implements IAdvisorService {
 
     @Override
     public ProviderDto createProvider(ProviderDto providerDto) throws AdvisorException {
+        LOGGER.info("INICIA CREACIÓN DE PROVEEDOR -> [{}]", providerDto);
         CategoryEntity categoryEntity = categoryRepository.findById(providerDto.getCategoryId())
                 .orElseThrow(() -> new AdvisorException(EExceptionCode.PROVIDER_NOT_FOUND, "No existe la categoria ingresada"));
         ProviderEntity providerEntity = ProviderMapper.providerDtoMapperInProviderEntity(providerDto);
         providerEntity.setCategory(categoryEntity);
         providerRepository.save(providerEntity);
         providerDto.setProviderId(providerEntity.getId());
+        LOGGER.info("FINALIZA CREACIÓN DE PROVEEDOR -> [{}]", providerDto);
         return providerDto;
+    }
+
+    @Override
+    public void notificationProvidersNewQuotation(int category, RequestQuotationWrapperDto requestQuotationWrapperDto) throws AdvisorException {
+        FindProviderDto findProviderDto = new FindProviderDto();
+        findProviderDto.setCategoryId(category);
+        List<ProviderEntity> providersToReport = getProvider(EProviderFilter.CATEGORY, findProviderDto);
+        providersToReport.forEach(providerEntity -> {
+            try {
+                notificationService.sendNotificationHandler(providerEntity, requestQuotationWrapperDto);
+            } catch (IOException | MessagingException e) {
+                LOGGER.info("Error en notificacion:", e);
+            }
+        });
     }
 
     private List<ProviderEntity> getProvider(EProviderFilter filter, FindProviderDto findProviderDto) throws AdvisorException {
@@ -91,6 +111,11 @@ public class AdvisorServiceImpl implements IAdvisorService {
     @Autowired
     public void setCategoryRepository(ICategoryRepository categoryRepository) {
         this.categoryRepository = categoryRepository;
+    }
+
+    @Autowired
+    public void setNotificationService(INotificationService notificationService) {
+        this.notificationService = notificationService;
     }
 
     @Autowired

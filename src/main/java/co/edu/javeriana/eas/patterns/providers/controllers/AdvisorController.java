@@ -1,5 +1,6 @@
 package co.edu.javeriana.eas.patterns.providers.controllers;
 
+import co.edu.javeriana.eas.patterns.common.dto.quotation.RequestQuotationWrapperDto;
 import co.edu.javeriana.eas.patterns.providers.dto.FindProviderDto;
 import co.edu.javeriana.eas.patterns.providers.dto.ProviderDto;
 import co.edu.javeriana.eas.patterns.providers.enums.EProviderFilter;
@@ -49,6 +50,17 @@ public class AdvisorController {
         } catch (AdvisorException e) {
             LOGGER.error("Error la creación de proveedor", e);
             return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
+        }
+    }
+
+    @PostMapping("/notification-advisor/{category}")
+    public ResponseEntity<Void> reportAdvisorNewQuotation(@PathVariable int category, @RequestBody RequestQuotationWrapperDto requestQuotationWrapperDto) {
+        try {
+            advisorService.notificationProvidersNewQuotation(category, requestQuotationWrapperDto);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (AdvisorException e) {
+            LOGGER.error("Error en la notificacion de proveedores", e);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
