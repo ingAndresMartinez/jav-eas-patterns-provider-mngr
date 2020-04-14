@@ -1,6 +1,8 @@
 package co.edu.javeriana.eas.patterns.providers.services.impl;
 
 import co.edu.javeriana.eas.patterns.common.dto.quotation.RequestQuotationWrapperDto;
+import co.edu.javeriana.eas.patterns.common.dto.quotation.UpdateRequestQuotationStateDto;
+import co.edu.javeriana.eas.patterns.common.enums.ERequestStatus;
 import co.edu.javeriana.eas.patterns.persistence.entities.ProviderEntity;
 import co.edu.javeriana.eas.patterns.providers.dto.email.MailDto;
 import co.edu.javeriana.eas.patterns.providers.services.IEmailService;
@@ -37,6 +39,7 @@ public class NotificationServiceImpl implements INotificationService {
         } else {
             callEndPoint(providerEntity, requestQuotationWrapperDto);
         }
+        updateRequestQuotationStatus(requestQuotationWrapperDto);
         LOGGER.info("finaliza proceso de notificación para proveedor [{}].", providerEntity.getId());
     }
 
@@ -63,6 +66,19 @@ public class NotificationServiceImpl implements INotificationService {
         }
         LOGGER.info("finaliza proceso de notificacion por integracion proveedor [{}].", providerEntity.getId());
 
+    }
+
+    private void updateRequestQuotationStatus(RequestQuotationWrapperDto requestQuotationWrapperDto) {
+        LOGGER.info("inicia proceso de actualización de estado para la solicitud [{}].", requestQuotationWrapperDto.getRequestQuotationId());
+        try {
+            UpdateRequestQuotationStateDto updateRequestQuotationStateDto = new UpdateRequestQuotationStateDto();
+            updateRequestQuotationStateDto.setRequestId(requestQuotationWrapperDto.getRequestQuotationId());
+            updateRequestQuotationStateDto.seteRequestStatus(ERequestStatus.IN_PROCESS);
+            restTemplate.postForEntity("http://localhost:7073/request-quotation/status", updateRequestQuotationStateDto, Void.class);
+        } catch (HttpClientErrorException e) {
+            LOGGER.error("Error en notificacion a proveedor externo: ", e);
+        }
+        LOGGER.info("finaliza proceso de actualización de estado para la solicitud [{}].", requestQuotationWrapperDto.getRequestQuotationId());
     }
 
     @Autowired
