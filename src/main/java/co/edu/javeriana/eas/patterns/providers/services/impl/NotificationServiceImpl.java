@@ -55,11 +55,13 @@ public class NotificationServiceImpl implements INotificationService {
     }
 
     private void callEndPoint(ProviderEntity providerEntity, RequestQuotationWrapperDto requestQuotationWrapperDto) {
+        LOGGER.info("inicia proceso de notificacion por integracion proveedor [{}].", providerEntity.getId());
         try {
             restTemplate.postForEntity(providerEntity.getEndPoint(), requestQuotationWrapperDto, Void.class);
         } catch (HttpClientErrorException e) {
             LOGGER.error("Error en notificacion a proveedor externo: ", e);
         }
+        LOGGER.info("finaliza proceso de notificacion por integracion proveedor [{}].", providerEntity.getId());
 
     }
 

@@ -17,9 +17,9 @@ import java.util.List;
 
 @RestController
 @RequestMapping("advisor")
-public class AdvisorController {
+public class ProviderController {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AdvisorController.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ProviderController.class);
 
     private IAdvisorService advisorService;
 
@@ -53,7 +53,7 @@ public class AdvisorController {
         }
     }
 
-    @PostMapping("/notification-advisor/{category}")
+    @PostMapping("/notification-provider/{category}")
     public ResponseEntity<Void> reportAdvisorNewQuotation(@PathVariable int category, @RequestBody RequestQuotationWrapperDto requestQuotationWrapperDto) {
         try {
             advisorService.notificationProvidersNewQuotation(category, requestQuotationWrapperDto);
