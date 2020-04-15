@@ -2,9 +2,15 @@ package co.edu.javeriana.eas.patterns.providers.services.impl;
 
 import co.edu.javeriana.eas.patterns.common.dto.quotation.RequestQuotationWrapperDto;
 import co.edu.javeriana.eas.patterns.common.dto.quotation.UpdateRequestQuotationStateDto;
+import co.edu.javeriana.eas.patterns.common.enums.EExceptionCode;
 import co.edu.javeriana.eas.patterns.common.enums.ERequestStatus;
 import co.edu.javeriana.eas.patterns.persistence.entities.ProviderEntity;
+import co.edu.javeriana.eas.patterns.persistence.entities.RequestProviderEntity;
+import co.edu.javeriana.eas.patterns.persistence.entities.RequestQuotationEntity;
+import co.edu.javeriana.eas.patterns.persistence.repositories.IRequestProviderRepository;
+import co.edu.javeriana.eas.patterns.persistence.repositories.IRequestQuotationRepository;
 import co.edu.javeriana.eas.patterns.providers.dto.email.MailDto;
+import co.edu.javeriana.eas.patterns.providers.exceptions.AdvisorException;
 import co.edu.javeriana.eas.patterns.providers.services.IEmailService;
 import co.edu.javeriana.eas.patterns.providers.services.INotificationService;
 import org.slf4j.Logger;
@@ -28,11 +34,13 @@ public class NotificationServiceImpl implements INotificationService {
 
     private String emailFrom;
 
+    private IRequestQuotationRepository requestQuotationRepository;
+    private IRequestProviderRepository requestProviderRepository;
     private IEmailService emailService;
     private RestTemplate restTemplate;
 
     @Override
-    public void sendNotificationHandler(ProviderEntity providerEntity, RequestQuotationWrapperDto requestQuotationWrapperDto) throws IOException, MessagingException {
+    public void sendNotificationHandler(ProviderEntity providerEntity, RequestQuotationWrapperDto requestQuotationWrapperDto) throws IOException, MessagingException, AdvisorException {
         LOGGER.info("inicia proceso de notificación para proveedor [{}].", providerEntity.getId());
         if (Objects.isNull(providerEntity.getEndPoint())) {
             sendEmail(providerEntity);
@@ -40,7 +48,18 @@ public class NotificationServiceImpl implements INotificationService {
             callEndPoint(providerEntity, requestQuotationWrapperDto);
         }
         updateRequestQuotationStatus(requestQuotationWrapperDto);
+        createRequestProvider(providerEntity, requestQuotationWrapperDto);
         LOGGER.info("finaliza proceso de notificación para proveedor [{}].", providerEntity.getId());
+    }
+
+    private void createRequestProvider(ProviderEntity providerEntity, RequestQuotationWrapperDto requestQuotationWrapperDto) throws AdvisorException {
+        RequestQuotationEntity requestQuotationEntity = requestQuotationRepository.findById(requestQuotationWrapperDto.getRequestQuotationId()).
+                orElseThrow(() -> new AdvisorException(EExceptionCode.REQUEST_QUOTATION_NOT_FOUND, "Cotizacion no encontrada"));
+        RequestProviderEntity requestProviderEntity = new RequestProviderEntity();
+        requestProviderEntity.setNotified(0);
+        requestProviderEntity.setProvider(providerEntity);
+        requestProviderEntity.setRequest(requestQuotationEntity);
+        requestProviderRepository.save(requestProviderEntity);
     }
 
     private void sendEmail(ProviderEntity providerEntity) throws IOException, MessagingException {
@@ -79,6 +98,16 @@ public class NotificationServiceImpl implements INotificationService {
             LOGGER.error("Error en notificacion a proveedor externo: ", e);
         }
         LOGGER.info("finaliza proceso de actualización de estado para la solicitud [{}].", requestQuotationWrapperDto.getRequestQuotationId());
+    }
+
+    @Autowired
+    public void setRequestQuotationRepository(IRequestQuotationRepository requestQuotationRepository) {
+        this.requestQuotationRepository = requestQuotationRepository;
+    }
+    
+    @Autowired
+    public void setRequestProviderRepository(IRequestProviderRepository requestProviderRepository) {
+        this.requestProviderRepository = requestProviderRepository;
     }
 
     @Autowired
