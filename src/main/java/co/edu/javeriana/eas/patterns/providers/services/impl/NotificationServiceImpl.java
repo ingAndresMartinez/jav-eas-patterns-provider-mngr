@@ -47,7 +47,7 @@ public class NotificationServiceImpl implements INotificationService {
         } else {
             callEndPoint(providerEntity, requestQuotationWrapperDto);
         }
-        updateRequestQuotationStatus(requestQuotationWrapperDto);
+
         createRequestProvider(providerEntity, requestQuotationWrapperDto);
         LOGGER.info("finaliza proceso de notificación para proveedor [{}].", providerEntity.getId());
     }
@@ -104,7 +104,7 @@ public class NotificationServiceImpl implements INotificationService {
     public void setRequestQuotationRepository(IRequestQuotationRepository requestQuotationRepository) {
         this.requestQuotationRepository = requestQuotationRepository;
     }
-    
+
     @Autowired
     public void setRequestProviderRepository(IRequestProviderRepository requestProviderRepository) {
         this.requestProviderRepository = requestProviderRepository;
