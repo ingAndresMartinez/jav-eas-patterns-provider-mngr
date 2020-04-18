@@ -80,7 +80,7 @@ public class AdvisorServiceImpl implements IAdvisorService {
         providersToReport.forEach(providerEntity -> {
             try {
                 notificationService.sendNotificationHandler(providerEntity, requestQuotationWrapperDto);
-            } catch (IOException | MessagingException e) {
+            } catch (IOException | MessagingException | AdvisorException e) {
                 LOGGER.info("Error en notificacion:", e);
             }
         });

@@ -48,5 +48,17 @@ de diseño, en la Especialización de Arquitectura de Software Empresarial 2020 
         <td>200 - OK -</td>
         <td>404 - NOT_FOUND- No se encuentra información relacionada al filtro</td>
     </tr>
+    <tr>
+        <td>/advisor/notification-provider/{category}</td>
+        <td>Notifica a los usuarios internos o externos la creación de una nueva solicitud de 
+        cotización, usando publish como topic "categoria"<br>
+        </td>
+        <td>POST</td>
+        <td>200 - OK -</td>
+        <td>500 - INTERNAL_ERROR_SERVER - No se encuentra información relacionada al filtro</td>
+    </tr> 
+    
+    
+    
 </table>
 
